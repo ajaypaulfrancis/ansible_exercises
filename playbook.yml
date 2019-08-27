@@ -52,3 +52,4 @@
           - mysql-server
 
       - name: Disable the firewall
+        service: name=ufw state=stopped

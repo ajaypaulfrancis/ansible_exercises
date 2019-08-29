@@ -66,22 +66,23 @@
 
       - name: Add apache virtual host for Drupal 8 env
         template:
-           src: "templates/drupal.test.conf.j2"
-           dest: "/etc/apache2/sites-available/{{ domain }}.test.conf"
-           owner: root
-           group: root
-           mode: 0644
+          src: "templates/drupal.test.conf.j2"
+          dest: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+          owner: root
+          group: root
+          mode: 0644
         notify: restart apache
 
-       - name: Symlink Drupal virtualhost to sites-enabled
-         file:
-            src: "/etc/apache2/sites-available/{{ domain }}.test.conf"
-            dest: "/etc/apache2/sites-enabled/{{ domain }}.test.conf"
-            state: link
-         notify: restart apache
+      - name: Symlink Drupal virtualhost to sites-enabled
+        file:
+          src: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+          dest: "/etc/apache2/sites-enabled/{{ domain }}.test.conf"
+          state: link
+        notify: restart apache
 
-       - name: Remove default virtualhost file.
-         file:
-            path: "/etc/apache2/sites-enabled/000-default.conf"
-            state: absent
-         notify: restart apache 
+      - name: Remove default virtualhost file.
+        file:
+          path: "/etc/apache2/sites-enabled/000-default.conf"
+          state: absent
+        notify: restart apache
+           

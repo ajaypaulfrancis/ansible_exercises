@@ -51,37 +51,59 @@
           - python-mysqldb
           - mysql-server
 
-      - name: Disable the firewall
-        service: name=ufw state=stopped
+    - name: Disable the firewall
+      service: name=ufw state=stopped
 
-      - name: "Start Apache , MySql and php"
-        service: "name={ item}" state=started enabled=yes
-        with_items:
-           - apache
-           - mysql
+    - name: "Start Apache , MySql and php"
+      service: "name={ item }" state=started enabled=yes
+      with_items:
+         - apache
+         - mysql
 
-      - name: Enable Apached rewrite module which helps to create different urls
-        apache2_module: name=rewrite state=present
-        notify: restart apache
+    - name: Enable Apached rewrite module which helps to create different urls
+      apache2_module: name=rewrite state=present
+      notify: restart apache
 
-      - name: Add apache virtual host for Drupal 8 env
-        template:
-          src: "templates/drupal.test.conf.j2"
-          dest: "/etc/apache2/sites-available/{{ domain }}.test.conf"
-          owner: root
-          group: root
-          mode: 0644
-        notify: restart apache
+    - name: Add apache virtual host for Drupal 8 env
+      template:
+        src: "templates/drupal.test.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+        owner: root
+        group: root
+        mode: 0644
+      notify: restart apache
 
-      - name: Symlink Drupal virtualhost to sites-enabled
-        file:
-          src: "/etc/apache2/sites-available/{{ domain }}.test.conf"
-          dest: "/etc/apache2/sites-enabled/{{ domain }}.test.conf"
-          state: link
-        notify: restart apache
+    - name: Symlink Drupal virtualhost to sites-enabled
+      file:
+        src: "/etc/apache2/sites-available/{{ domain }}.test.conf"
+        dest: "/etc/apache2/sites-enabled/{{ domain }}.test.conf"
+        state: link
+      notify: restart apache
 
-      - name: Remove default virtualhost file.
-        file:
-          path: "/etc/apache2/sites-enabled/000-default.conf"
-          state: absent
-        notify: restart apache
+    - name: Remove default virtualhost file.
+      file:
+        path: "/etc/apache2/sites-enabled/000-default.conf"
+        state: absent
+      notify: restart apache
+
+    - name: Adjust opcache memory setting
+      lineinfile:
+        dest: "/etc/php/7.1/apache2/conf.d/10-opcache.ini"
+        regexp: "^opcache.memory_consumption"
+        line: "opcache.memory_consumption = 96"
+        state: present
+      notify: restart apache
+
+    - name: Remove the MySQL test database
+      mysql_db: db=test state=absent
+
+    - name: Create a database for drupal
+      mysql_db: "db={{ domain }} state=present"
+
+    - name: Create a MySQL user for drupal
+      mysql_user:
+        name: "{{ domain }}"
+        password: "1234"
+        priv: {{ domain }}.*:ALL"
+        host: localhost
+        state: present

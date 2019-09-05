@@ -57,7 +57,7 @@
     - name: "Start Apache , MySql and php"
       service: name="{{ item }}" state=started enabled=yes
       with_items:
-         - apache
+         - apache2
          - mysql
 
     - name: Enable Apached rewrite module which helps to create different urls

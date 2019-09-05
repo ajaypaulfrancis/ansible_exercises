@@ -55,7 +55,7 @@
       service: name=ufw state=stopped
 
     - name: "Start Apache , MySql and php"
-      service: name="{{ item }}" state=started enabled=yes
+      service: "name={{ item }} state=started enabled=yes"
       with_items:
          - apache2
          - mysql
